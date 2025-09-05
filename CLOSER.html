@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TailorTalk - Enhanced Writing Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+            transition: transform 0.3s ease, width 0.3s ease;
+            position: relative;
+            z-index: 999;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-280px);
+            width: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .new-project-btn {
+            width: 100%;
+            padding: 12px 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: transform 0.2s ease;
+        }
+
+        .new-project-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .save-project-btn {
+            width: 100%;
+            padding: 12px 20px;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 30px;
+            transition: transform 0.2s ease;
+        }
+
+        .save-project-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .menu-section {
+            margin-bottom: 25px;
+        }
+
+        .menu-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .menu-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .menu-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .menu-icon {
+            width: 20px;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.sidebar-collapsed {
+            margin-left: 0;
+        }
+
+        .hamburger {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: left 0.3s ease;
+        }
+
+        .hamburger.sidebar-collapsed {
+            left: 20px;
+        }
+
+        .hamburger:not(.sidebar-collapsed) {
+            left: 300px;
+        }
+
+        .feature-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .feature-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 30px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            margin-right: 15px;
+            border-radius: 2px;
+        }
+
+        /* Enhanced Character Profile Card */
+        .enhanced-character-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            transition: transform 0.3s ease;
+        }
+
+        .enhanced-character-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .character-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .character-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            margin-right: 20px;
+        }
+
+        .character-info h3 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .character-role-badge {
+            background: #f0f2ff;
+            color: #667eea;
+            padding: 6px 15px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .character-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .detail-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .detail-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .detail-content {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* Forms and Inputs */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+            font-family: inherit;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        /* Dialogue */
+        .dialogue-suggestions {
+            margin: 20px 0;
+        }
+
+        .dialogue-suggestion {
+            background: white;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .dialogue-suggestion:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .dialogue-suggestion.selected {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .dialogue-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .dialogue-checkbox.checked {
+            background: #28a745;
+            border-color: #28a745;
+        }
+
+        .dialogue-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .dialogue-text {
+            flex: 1;
+        }
+
+        /* Plot Canvas */
+        .plot-canvas {
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            cursor: crosshair;
+            width: 100%;
+            max-width: 800px;
+            background: white;
+        }
+
+        /* Stats */
+        .stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 20px 0;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .progress-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            width: 65%;
+            height: 30px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        /* Settings */
+        .settings-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e1e5e9;
+        }
+
+        .settings-tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.2s ease;
+        }
+
+        .settings-tab.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .settings-tab:hover {
+            color: #667eea;
+        }
+
+        .settings-tab-content {
+            display: none;
+        }
+
+        .settings-tab-content.active {
+            display: block;
+        }
+
+        .project-item {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .project-info h4 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .project-info p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .project-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal h3 {
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                z-index: 999;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding-top: 80px;
+            }
+
+            .form-grid, .character-details, .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .hamburger:not(.sidebar-collapsed) {
+                left: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Hamburger Menu -->
+        <button class="hamburger" id="hamburger" onclick="toggleSidebar()">☰</button>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo">TailorTalk</div>
+            
+            <button class="new-project-btn" onclick="startNewProject()">
+                🔄 New Project
+            </button>
+
+            <button class="save-project-btn" onclick="saveCurrentProject()">
+                💾 Save Project
+            </button>
+
+            <div class="menu-section">
+                <div class="menu-title">Enhanced Features</div>
+                <div class="menu-item active" onclick="showSection('character')">
+                    <span class="menu-icon">👥</span>
+                    Character Research
+                </div>
+                <div class="menu-item" onclick="showSection('dialogue')">
+                    <span class="menu-icon">💬</span>
+                    Dialogue Ideation
+                </div>
+                <div class="menu-item" onclick="showSection('plot')">
+                    <span class="menu-icon">📊</span>
+                    Malleable Plot Line
+                </div>
+                <div class="menu-item" onclick="showSection('stats')">
+                    <span class="menu-icon">📈</span>
+                    Enhanced Stats
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-title">Settings</div>
+                <div class="menu-item" onclick="showSection('settings')">
+                    <span class="menu-icon">⚙️</span>
+                    Preferences
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+            <!-- Character Research -->
+            <div class="feature-section active" id="character">
+                <h1 class="section-title">Enhanced Character Research</h1>
+                <div class="message success" id="characterMessage"></div>
+                
+                <!-- Character Display -->
+                <div id="characterGrid">
+                    <!-- Placeholder character - always visible -->
+                    <div class="enhanced-character-card">
+                        <div class="character-header">
+                            <div class="character-avatar">ES</div>
+                            <div class="character-info">
+                                <h3>Elena Shadowheart</h3>
+                                <span class="character-role-badge">Protagonist</span>
+                            </div>
+                        </div>
+                        <div class="character-details">
+                            <div class="detail-section">
+                                <div class="detail-title">Physical Traits</div>
+                                <div class="detail-content">Tall and lean, with striking silver hair and violet eyes. Has intricate tattoos on her arms that glow when using magic.</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-title">Internal Traits</div>
+                                <div class="detail-content">Brave but impulsive. Fears being abandoned again. Driven by a need to protect others, sometimes at her own expense.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Character Creation Form -->
+                <h3 style="margin: 30px 0 15px 0;">Create New Character Profile</h3>
+                <div class="form-grid">
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">Character Name</label>
+                            <input type="text" class="form-input" id="characterName" placeholder="Enter character name...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Role</label>
+                            <select class="form-select" id="characterRole">
+                                <option value="Protagonist">Protagonist</option>
+                                <option value="Antagonist">Antagonist</option>
+                                <option value="Supporting">Supporting</option>
+                                <option value="Ally">Ally</option>
+                                <option value="Mentor">Mentor</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">Physical Traits</label>
+                            <textarea class="form-textarea" id="physicalTraits" placeholder="Describe appearance, height, build, distinctive features..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Internal Traits</label>
+                            <textarea class="form-textarea" id="internalTraits" placeholder="Personality, fears, motivations, goals..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="generateCharacterProfile()">Generate Enhanced Profile</button>
+            </div>
+
+            <!-- Dialogue Ideation -->
+            <div class="feature-section" id="dialogue">
+                <h1 class="section-title">Enhanced Dialogue Ideation</h1>
+                <div class="message success" id="dialogueMessage"></div>
+                
+                <!-- Dialogue Configuration -->
+                <div class="form-grid">
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">Character</label>
+                            <select class="form-select" id="dialogueCharacter">
+                                <option value="Elena">Elena Shadowheart</option>
+                                <option value="Marcus">Marcus Thornfield</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Setting</label>
+                            <input type="text" class="form-input" id="dialogueSetting" placeholder="Medieval, Modern, Futuristic, etc.">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">Context</label>
+                            <textarea class="form-textarea" id="dialogueContext" placeholder="What's happening in the scene?"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Previous Line (Optional)</label>
+                            <input type="text" class="form-input" id="previousLine" placeholder="Previous dialogue line...">
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="generateDialogue()">Generate Dialogue Ideas</button>
+                
+                <!-- Dialogue Suggestions -->
+                <div class="dialogue-suggestions" id="dialogueSuggestions">
+                    <!-- Suggestions will be populated here -->
+                </div>
+            </div>
+
+            <!-- Plot Line -->
+            <div class="feature-section" id="plot">
+                <h1 class="section-title">Malleable Plot Line</h1>
+                <div class="message success" id="plotMessage"></div>
+                
+                <p style="margin-bottom: 20px; color: #666;">
+                    Interactive plot visualization. Click to add points, drag to move them around.
+                </p>
+                
+                <canvas id="plotCanvas" class="plot-canvas" width="800" height="400"></canvas>
+                
+                <div style="margin-top: 15px;">
+                    <button class="btn" onclick="resetPlot()">Reset Plot</button>
+                    <button class="btn btn-outline" onclick="savePlot()">Save Plot</button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="feature-section" id="stats">
+                <h1 class="section-title">Enhanced Writing Analytics</h1>
+                
+                <div class="stats-container">
+                    <div class="chart-container">
+                        <h3 class="chart-title">Writing Time (Hours)</h3>
+                        <canvas id="timeChart" width="400" height="250"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3 class="chart-title">Character Focus Distribution</h3>
+                        <canvas id="focusChart" width="400" height="250"></canvas>
+                    </div>
+                </div>
+                
+                <div class="progress-container">
+                    <h3 class="chart-title">Project Progress</h3>
+                    <div style="background: #f8f9fa; border-radius: 10px; padding: 4px;">
+                        <div class="progress-bar">65% Complete</div>
+                    </div>
+                    <p style="text-align: center; color: #666; margin-top: 10px;">45,892 words of estimated 70,000 word target</p>
+                </div>
+                
+                <button class="btn" onclick="simulateWriting()">Simulate Writing Session</button>
+                <button class="btn btn-outline" onclick="addCharacterFocus()">Add Character Focus</button>
+            </div>
+
+            <!-- Settings -->
+            <div class="feature-section" id="settings">
+                <h1 class="section-title">Settings</h1>
+                <div class="message success" id="settingsMessage"></div>
+                
+                <!-- Settings Tabs -->
+                <div class="settings-tabs">
+                    <button class="settings-tab active" onclick="showSettingsTab('preferences')">Preferences</button>
+                    <button class="settings-tab" onclick="showSettingsTab('projects')">Saved Projects</button>
+                </div>
+                
+                <!-- Preferences Tab -->
+                <div class="settings-tab-content active" id="preferences">
+                    <div class="form-group">
+                        <label class="form-label">Daily Writing Goal (words)</label>
+                        <input type="number" class="form-input" id="dailyGoal" value="1000" placeholder="1000">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Preferred Writing Time</label>
+                        <select class="form-select" id="writingTime">
+                            <option>Morning (6 AM - 12 PM)</option>
+                            <option selected>Afternoon (12 PM - 6 PM)</option>
+                            <option>Evening (6 PM - 12 AM)</option>
+                            <option>Late Night (12 AM - 6 AM)</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn" onclick="saveSettings()">Save Settings</button>
+                </div>
+                
+                <!-- Saved Projects Tab -->
+                <div class="settings-tab-content" id="projects">
+                    <div id="savedProjectsList">
+                        <!-- Saved projects will be populated here -->
+                    </div>
+                    
+                    <button class="btn btn-outline" onclick="viewSavedProjects()">Refresh Projects List</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Project Modal -->
+    <div class="modal" id="newProjectModal">
+        <div class="modal-content">
+            <h3>Create New Project</h3>
+            <div class="form-group">
+                <label class="form-label">Project Name</label>
+                <input type="text" class="form-input" id="newProjectName" placeholder="Enter project name...">
+            </div>
+            <button class="btn" onclick="createNewProject()">Create Project</button>
+            <button class="btn btn-secondary" onclick="closeNewProjectModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // Global app state
+        let appState = {
+            currentProjectName: 'My Writing Project',
+            characters: [],
+            plotPoints: [],
+            selectedDialogue: [],
+            sidebarCollapsed: false,
+            currentSection: 'character'
+        };
+
+        // Sidebar toggle function
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const hamburger = document.getElementById('hamburger');
+            const mainContent = document.getElementById('mainContent');
+            
+            appState.sidebarCollapsed = !appState.sidebarCollapsed;
+            
+            if (appState.sidebarCollapsed) {
+                sidebar.classList.add('collapsed');
+                hamburger.classList.add('sidebar-collapsed');
+                mainContent.classList.add('sidebar-collapsed');
+            } else {
+                sidebar.classList.remove('collapsed');
+                hamburger.classList.remove('sidebar-collapsed');
+                mainContent.classList.remove('sidebar-collapsed');
+            }
+        }
+
+        // Show section function
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.feature-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Remove active class from all menu items
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Show selected section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                appState.currentSection = sectionId;
+            }
+
+            // Add active class to the correct menu item
+            const menuItem = document.querySelector(`[onclick="showSection('${sectionId}')"]`);
+            if (menuItem) {
+                menuItem.classList.add('active');
+            }
+
+            // Initialize section-specific content
+            if (sectionId === 'stats') {
+                initializeCharts();
+            } else if (sectionId === 'plot') {
+                initializePlotCanvas();
+            } else if (sectionId === 'settings') {
+                viewSavedProjects();
+            }
+        }
+
+        // Project management functions
+        function startNewProject() {
+            const modal = document.getElementById('newProjectModal');
+            modal.classList.add('show');
+            document.getElementById('newProjectName').focus();
+        }
+
+        function createNewProject() {
+            const projectName = document.getElementById('newProjectName').value.trim();
+            if (!projectName) {
+                alert('Please enter a project name!');
+                return;
+            }
+            
+            appState.currentProjectName = projectName;
+            appState.characters = [];
+            appState.plotPoints = [];
+            appState.selectedDialogue = [];
+            
+            // Clear all forms
+            document.getElementById('characterName').value = '';
+            document.getElementById('physicalTraits').value = '';
+            document.getElementById('internalTraits').value = '';
+            document.getElementById('dialogueContext').value = '';
+            document.getElementById('previousLine').value = '';
+            document.getElementById('dialogueSuggestions').innerHTML = '';
+            
+            // Close modal
+            closeNewProjectModal();
+            
+            showMessage('New project "' + projectName + '" created!', 'success');
+            showSection('character');
+        }
+
+        function closeNewProjectModal() {
+            const modal = document.getElementById('newProjectModal');
+            modal.classList.remove('show');
+            document.getElementById('newProjectName').value = '';
+        }
+
+        function saveCurrentProject() {
+            const projectData = {
+                name: appState.currentProjectName,
+                characters: appState.characters,
+                plotPoints: appState.plotPoints,
+                selectedDialogue: appState.selectedDialogue,
+                timestamp: new Date().toISOString()
+            };
+            
+            const projectKey = appState.currentProjectName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            
+            try {
+                const projects = JSON.parse(localStorage.getItem('tailortalk_projects') || '{}');
+                projects[projectKey] = projectData;
+                localStorage.setItem('tailortalk_projects', JSON.stringify(projects));
+                showMessage('Project "' + appState.currentProjectName + '" saved successfully!', 'success');
+            } catch (error) {
+                showMessage('Failed to save project: ' + error.message, 'error');
+            }
+        }
+
+        function loadProject(projectKey) {
+            try {
+                const projects = JSON.parse(localStorage.getItem('tailortalk_projects') || '{}');
+                const project = projects[projectKey];
+                
+                if (project) {
+                    appState.currentProjectName = project.name;
+                    appState.characters = project.characters || [];
+                    appState.plotPoints = project.plotPoints || [];
+                    appState.selectedDialogue = project.selectedDialogue || [];
+                    
+                    // Re-render character grid
+                    renderCharacters();
+                    
+                    // Re-render dialogue with checkboxes
+                    if (appState.selectedDialogue.length > 0) {
+                        renderSavedDialogue();
+                    }
+                    
+                    showMessage('Project "' + project.name + '" loaded successfully!', 'success');
+                    loadDashboard();
+                } else {
+                    showMessage('Project not found!', 'error');
+                }
+            } catch (error) {
+                showMessage('Failed to load project: ' + error.message, 'error');
+            }
+        }
+
+        function viewSavedProjects() {
+            try {
+                const projects = JSON.parse(localStorage.getItem('tailortalk_projects') || '{}');
+                const projectsList = document.getElementById('savedProjectsList');
+                
+                projectsList.innerHTML = '';
+                
+                Object.keys(projects).forEach(key => {
+                    const project = projects[key];
+                    const projectItem = document.createElement('div');
+                    projectItem.className = 'project-item';
+                    projectItem.innerHTML = `
+                        <div class="project-info">
+                            <h4>${project.name}</h4>
+                            <p>Created: ${new Date(project.timestamp).toLocaleDateString()} • Characters: ${(project.characters || []).length}</p>
+                        </div>
+                        <div class="project-actions">
+                            <button class="btn" onclick="loadProject('${key}')">Load</button>
+                            <button class="btn btn-danger" onclick="deleteProject('${key}')">Delete</button>
+                        </div>
+                    `;
+                    projectsList.appendChild(projectItem);
+                });
+                
+                if (Object.keys(projects).length === 0) {
+                    projectsList.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No saved projects found. Create and save a project to see it here.</p>';
+                }
+            } catch (error) {
+                showMessage('Failed to load projects: ' + error.message, 'error');
+            }
+        }
+
+        function deleteProject(projectKey) {
+            if (confirm('Are you sure you want to delete this project?')) {
+                try {
+                    const projects = JSON.parse(localStorage.getItem('tailortalk_projects') || '{}');
+                    delete projects[projectKey];
+                    localStorage.setItem('tailortalk_projects', JSON.stringify(projects));
+                    viewSavedProjects();
+                    showMessage('Project deleted successfully!', 'success');
+                } catch (error) {
+                    showMessage('Failed to delete project: ' + error.message, 'error');
+                }
+            }
+        }
+
+        function loadDashboard() {
+            showSection('character');
+        }
+
+        // Character functions
+        function generateCharacterProfile() {
+            const name = document.getElementById('characterName').value;
+            const role = document.getElementById('characterRole').value;
+            const physical = document.getElementById('physicalTraits').value;
+            const internal = document.getElementById('internalTraits').value;
+
+            if (!name.trim()) {
+                showMessage('Please enter a character name!', 'error');
+                return;
+            }
+
+            const character = {
+                id: Date.now(),
+                name: name,
+                role: role,
+                physicalTraits: physical,
+                internalTraits: internal
+            };
+
+            appState.characters.push(character);
+            renderCharacters();
+            
+            // Clear form
+            document.getElementById('characterName').value = '';
+            document.getElementById('physicalTraits').value = '';
+            document.getElementById('internalTraits').value = '';
+            
+            showMessage('Character "' + name + '" created successfully!', 'success');
+        }
+
+        function renderCharacters() {
+            const grid = document.getElementById('characterGrid');
+            
+            // Find existing placeholder and user characters
+            const existingCards = grid.querySelectorAll('.enhanced-character-card');
+            const userCards = Array.from(existingCards).slice(1); // Skip placeholder
+            
+            // Remove only user-created characters, keep placeholder
+            userCards.forEach(card => card.remove());
+
+            // Add user-created characters after placeholder
+            appState.characters.forEach(character => {
+                const card = document.createElement('div');
+                card.className = 'enhanced-character-card';
+                card.innerHTML = `
+                    <div class="character-header">
+                        <div class="character-avatar">${character.name.substring(0, 2).toUpperCase()}</div>
+                        <div class="character-info">
+                            <h3>${character.name}</h3>
+                            <span class="character-role-badge">${character.role}</span>
+                        </div>
+                    </div>
+                    <div class="character-details">
+                        <div class="detail-section">
+                            <div class="detail-title">Physical Traits</div>
+                            <div class="detail-content">${character.physicalTraits || 'No physical traits defined.'}</div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">Internal Traits</div>
+                            <div class="detail-content">${character.internalTraits || 'No internal traits defined.'}</div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Dialogue functions
+        function generateDialogue() {
+            const character = document.getElementById('dialogueCharacter').value;
+            const setting = document.getElementById('dialogueSetting').value;
+            const context = document.getElementById('dialogueContext').value;
+            const previousLine = document.getElementById('previousLine').value;
+
+            const suggestions = [
+                `<strong>Confident:</strong> "I've handled situations like this before. We just need to stay calm and think this through."`,
+                `<strong>Cautious:</strong> "Something doesn't feel right about this. Maybe we should reconsider our approach."`,
+                `<strong>Determined:</strong> "No matter what obstacles we face, I won't give up. Too much depends on our success."`,
+                `<strong>Reflective:</strong> "You know, I never thought I'd find myself in a situation like this. Life has a way of surprising us."`,
+                `<strong>Urgent:</strong> "We're running out of time! We need to make a decision now before it's too late."`,
+                `<strong>Mysterious:</strong> "There are things about this place that you don't understand yet. Some secrets are better left buried."`,
+                `<strong>Encouraging:</strong> "I believe in you more than you believe in yourself right now. Don't let fear make this decision for you."`
+            ];
+
+            const suggestionsContainer = document.getElementById('dialogueSuggestions');
+            suggestionsContainer.innerHTML = '';
+
+            suggestions.forEach((suggestion, index) => {
+                const suggestionDiv = document.createElement('div');
+                suggestionDiv.className = 'dialogue-suggestion';
+                suggestionDiv.setAttribute('data-suggestion-id', index);
+                
+                const checkbox = document.createElement('div');
+                checkbox.className = 'dialogue-checkbox';
+                checkbox.setAttribute('data-suggestion-id', index);
+                
+                const textDiv = document.createElement('div');
+                textDiv.className = 'dialogue-text';
+                textDiv.innerHTML = suggestion;
+                
+                suggestionDiv.appendChild(checkbox);
+                suggestionDiv.appendChild(textDiv);
+                
+                // Add click handler to checkbox
+                checkbox.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleDialogueSelection(index, suggestion);
+                });
+                
+                suggestionsContainer.appendChild(suggestionDiv);
+            });
+
+            // Restore previously selected dialogue
+            restoreDialogueSelections();
+
+            showMessage('New dialogue suggestions generated for ' + character + '!', 'success');
+        }
+
+        function toggleDialogueSelection(suggestionId, suggestionText) {
+            const checkbox = document.querySelector(`[data-suggestion-id="${suggestionId}"]`);
+            const suggestionDiv = checkbox.parentElement;
+            
+            if (checkbox.classList.contains('checked')) {
+                // Uncheck
+                checkbox.classList.remove('checked');
+                suggestionDiv.classList.remove('selected');
+                
+                // Remove from selected dialogue
+                appState.selectedDialogue = appState.selectedDialogue.filter(item => item.id !== suggestionId);
+            } else {
+                // Check
+                checkbox.classList.add('checked');
+                suggestionDiv.classList.add('selected');
+                
+                // Add to selected dialogue
+                appState.selectedDialogue.push({
+                    id: suggestionId,
+                    text: suggestionText
+                });
+            }
+        }
+
+        function restoreDialogueSelections() {
+            appState.selectedDialogue.forEach(item => {
+                const checkbox = document.querySelector(`[data-suggestion-id="${item.id}"]`);
+                if (checkbox) {
+                    checkbox.classList.add('checked');
+                    checkbox.parentElement.classList.add('selected');
+                }
+            });
+        }
+
+        function renderSavedDialogue() {
+            if (appState.selectedDialogue.length === 0) return;
+            
+            const suggestionsContainer = document.getElementById('dialogueSuggestions');
+            suggestionsContainer.innerHTML = '';
+            
+            appState.selectedDialogue.forEach((item, index) => {
+                const suggestionDiv = document.createElement('div');
+                suggestionDiv.className = 'dialogue-suggestion selected';
+                suggestionDiv.setAttribute('data-suggestion-id', item.id);
+                
+                const checkbox = document.createElement('div');
+                checkbox.className = 'dialogue-checkbox checked';
+                checkbox.setAttribute('data-suggestion-id', item.id);
+                
+                const textDiv = document.createElement('div');
+                textDiv.className = 'dialogue-text';
+                textDiv.innerHTML = item.text;
+                
+                suggestionDiv.appendChild(checkbox);
+                suggestionDiv.appendChild(textDiv);
+                
+                // Add click handler to checkbox
+                checkbox.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleDialogueSelection(item.id, item.text);
+                });
+                
+                suggestionsContainer.appendChild(suggestionDiv);
+            });
+        }
+
+        // Plot functions
+        function initializePlotCanvas() {
+            const canvas = document.getElementById('plotCanvas');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid
+            ctx.strokeStyle = '#f0f0f0';
+            ctx.lineWidth = 1;
+            
+            for (let x = 0; x <= canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let y = 0; y <= canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Draw axes
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 2;
+            
+            // X-axis
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height - 50);
+            ctx.lineTo(canvas.width, canvas.height - 50);
+            ctx.stroke();
+            
+            // Y-axis
+            ctx.beginPath();
+            ctx.moveTo(50, 0);
+            ctx.lineTo(50, canvas.height);
+            ctx.stroke();
+            
+            // Labels
+            ctx.fillStyle = '#333';
+            ctx.font = '12px Arial';
+            ctx.fillText('Story Timeline', canvas.width / 2 - 40, canvas.height - 10);
+            ctx.save();
+            ctx.translate(20, canvas.height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Tension/Interest', -40, 0);
+            ctx.restore();
+            
+            // Draw sample plot points
+            drawPlotPoints(ctx);
+            
+            // Add click listener
+            canvas.onclick = function(e) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                appState.plotPoints.push({ x: x, y: y });
+                initializePlotCanvas(); // Redraw
+                showMessage('Plot point added!', 'success');
+            };
+        }
+
+        function drawPlotPoints(ctx) {
+            // Default plot points if none exist
+            if (appState.plotPoints.length === 0) {
+                appState.plotPoints = [
+                    { x: 100, y: 300 },
+                    { x: 200, y: 250 },
+                    { x: 350, y: 150 },
+                    { x: 500, y: 200 },
+                    { x: 650, y: 100 },
+                    { x: 750, y: 120 }
+                ];
+            }
+            
+            // Draw lines between points
+            ctx.strokeStyle = '#764ba2';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            appState.plotPoints.forEach((point, index) => {
+                if (index === 0) {
+                    ctx.moveTo(point.x, point.y);
+                } else {
+                    ctx.lineTo(point.x, point.y);
+                }
+            });
+            ctx.stroke();
+            
+            // Draw points
+            ctx.fillStyle = '#667eea';
+            appState.plotPoints.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 6, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function resetPlot() {
+            appState.plotPoints = [];
+            initializePlotCanvas();
+            showMessage('Plot reset successfully!', 'success');
+        }
+
+        function savePlot() {
+            showMessage('Plot saved to current project!', 'success');
+        }
+
+        // Stats functions
+        function initializeCharts() {
+            drawTimeChart();
+            drawFocusChart();
+        }
+
+        function drawTimeChart() {
+            const canvas = document.getElementById('timeChart');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Sample data
+            const data = [2, 3, 1, 4, 2, 3, 5];
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            
+            const barWidth = 40;
+            const maxHeight = 200;
+            const maxValue = Math.max(...data);
+            
+            data.forEach((value, index) => {
+                const barHeight = (value / maxValue) * maxHeight;
+                const x = 50 + index * 50;
+                const y = 220 - barHeight;
+                
+                // Draw bar
+                ctx.fillStyle = '#667eea';
+                ctx.fillRect(x, y, barWidth, barHeight);
+                
+                // Draw label
+                ctx.fillStyle = '#333';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(days[index], x + barWidth/2, 240);
+                ctx.fillText(value + 'h', x + barWidth/2, y - 5);
+            });
+        }
+
+        function drawFocusChart() {
+            const canvas = document.getElementById('focusChart');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Sample data
+            const data = [
+                { name: 'Elena', value: 45, color: '#667eea' },
+                { name: 'Marcus', value: 25, color: '#764ba2' },
+                { name: 'Others', value: 30, color: '#9c88ff' }
+            ];
+            
+            const centerX = 200;
+            const centerY = 125;
+            const radius = 80;
+            
+            let currentAngle = 0;
+            
+            data.forEach(item => {
+                const sliceAngle = (item.value / 100) * Math.PI * 2;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.fillStyle = item.color;
+                ctx.fill();
+                
+                // Label
+                const labelAngle = currentAngle + sliceAngle / 2;
+                const labelX = centerX + Math.cos(labelAngle) * (radius + 20);
+                const labelY = centerY + Math.sin(labelAngle) * (radius + 20);
+                
+                ctx.fillStyle = '#333';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(item.name, labelX, labelY);
+                ctx.fillText(item.value + '%', labelX, labelY + 15);
+                
+                currentAngle += sliceAngle;
+            });
+        }
+
+        function simulateWriting() {
+            showMessage('Writing session simulated! Stats updated.', 'success');
+            initializeCharts();
+        }
+
+        function addCharacterFocus() {
+            showMessage('Character focus added to analytics!', 'success');
+            initializeCharts();
+        }
+
+        // Settings functions
+        function showSettingsTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.settings-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.settings-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            const clickedTab = document.querySelector(`[onclick="showSettingsTab('${tabName}')"]`);
+            if (clickedTab) {
+                clickedTab.classList.add('active');
+            }
+            
+            if (tabName === 'projects') {
+                viewSavedProjects();
+            }
+        }
+
+        function saveSettings() {
+            const dailyGoal = document.getElementById('dailyGoal').value;
+            const writingTime = document.getElementById('writingTime').value;
+            
+            const settings = {
+                dailyGoal: dailyGoal,
+                writingTime: writingTime
+            };
+            
+            try {
+                localStorage.setItem('tailortalk_settings', JSON.stringify(settings));
+                showMessage('Settings saved successfully!', 'success');
+            } catch (error) {
+                showMessage('Failed to save settings: ' + error.message, 'error');
+            }
+        }
+
+        // Utility function to show messages
+        function showMessage(text, type) {
+            const messageElement = document.getElementById(appState.currentSection + 'Message');
+            if (messageElement) {
+                messageElement.textContent = text;
+                messageElement.className = 'message ' + type;
+                messageElement.style.display = 'block';
+                
+                setTimeout(() => {
+                    messageElement.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboard();
+            
+            // Load saved settings
+            try {
+                const savedSettings = JSON.parse(localStorage.getItem('tailortalk_settings') || '{}');
+                if (savedSettings.dailyGoal) {
+                    document.getElementById('dailyGoal').value = savedSettings.dailyGoal;
+                }
+                if (savedSettings.writingTime) {
+                    document.getElementById('writingTime').value = savedSettings.writingTime;
+                }
+            } catch (error) {
+                console.log('No saved settings found');
+            }
+
+            // Close modal when clicking outside
+            document.getElementById('newProjectModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeNewProjectModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
